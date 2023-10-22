@@ -31,7 +31,7 @@ dataset = load_data(url)
 # crear la lista headers
 headers = ["Nombre","Plataforma","Año","Genero","Editorial","Ventas_NA","Ventas_EU","Ventas_JP","Ventas_Otros","Ventas_Global"]
 dataset.columns = headers
-df = dataset[['Plataforma','Año','Genero','Editorial','Ventas_NA','Ventas_EU','Ventas_JP','Ventas_Otros','Ventas_Global']].copy()
+df = dataset
 
 # Cadena Más Común (Moda)  -  para reemplazar los datos vacios con el valor más frecuente o la moda
 most_common_string = df['Editorial'].value_counts().idxmax()
@@ -53,12 +53,37 @@ df['Plataforma'] = df['Plataforma'].astype(str)
 df['Genero'] = df['Genero'].astype(str)
 df['Editorial'] = df['Editorial'].astype(str)
 
+# Filtros interactivos
+#filtro_ano = st.sidebar.selectbox('Filtrar por Año', df['Año'].unique())
+filtro_anos = df['Año'].unique().tolist()
+filtro_plataforma = df['Plataforma'].unique().tolist()
+filtro_genero = df['Genero'].unique().tolist()
+filtro_editorial = st.sidebar.selectbox('Filtrar por Editorial', df['Editorial'].unique())
+
+
 # Crear gráficas de barras
 
 with st.container():
   st.subheader("Bienvenidos a mi sitio web ddd :wave:")
   st.title("Ventas de Video Juegos")
   st.write(" Esta es una pagina para mostrar los resultados")
+  anual_selector = st.slider('Año de ventas :',
+                           min_value = min(filtro_anos),
+                           max_value = max(filtro_anos),
+                           value = (min(filtro_anos),max(filtro_anos))
+                           )
+
+  plataforma_selector = st.multiselect('Plataforma :',
+                            filtro_plataforma,
+                            default = filtro_plataforma
+                            )
+
+  genero_selector = st.multiselect('Genero :',
+                            filtro_genero,
+                            default = filtro_genero
+                            )
+
+  mask = (df['Año'].between(*anual_selector)&(df['Plataforma'].isin(plataforma_selector))&(df['Genero'].isin(genero_selector)))
   st.write(df)
   st.write("[Mas informacion >>>](https://github.com/Vitotoju)")
 
@@ -70,20 +95,14 @@ with left_column:
     st.header("Mi objetivo")
     
     st.write("Esta imagen muestra Total Ventas x Género")
-    total_por_grupo = df.groupby(['Genero'])['Ventas_NA'].sum().reset_index()
+    total_por_grupo = df[mask].groupby(['Genero'])['Ventas_NA'].sum().reset_index()
     total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
     st.bar_chart(total_por_grupo.set_index('Genero'))
-    #for i, row in total_por_grupo.iterrows():
-    #    st.text(f"{row['Genero']}: {row['Total_Grupo']}")
-
-    st.set_option('deprecation.showPyplotGlobalUse', False)  # Para evitar advertencias
-
-
 with right_column:
     st.header("Mi objetivo")
     
     st.write("Esta imagen muestra Total Ventas x Año")
-    total_por_grupo = df.groupby(['Año'])['Ventas_NA'].sum().reset_index()
+    total_por_grupo = df[mask].groupby(['Año'])['Ventas_NA'].sum().reset_index()
     total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
     st.bar_chart(total_por_grupo.set_index('Año'))
 
@@ -95,20 +114,17 @@ with st.container():
     st.header("Mi objetivo")
     
     st.write("Esta imagen muestra Total Ventas x Género")
-    total_por_grupo = df.groupby(['Genero'])['Ventas_NA'].sum().reset_index()
+    total_por_grupo = df[mask].groupby(['Genero'])['Ventas_NA'].sum().reset_index()
     total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
     st.bar_chart(total_por_grupo.set_index('Genero'))
     #for i, row in total_por_grupo.iterrows():
     #    st.text(f"{row['Genero']}: {row['Total_Grupo']}")
 
-    st.set_option('deprecation.showPyplotGlobalUse', False)  # Para evitar advertencias
-
-
 with right_column:
     st.header("Mi objetivo")
     
     st.write("Esta imagen muestra Total Ventas x Año")
-    total_por_grupo = df.groupby(['Año'])['Ventas_NA'].sum().reset_index()
+    total_por_grupo = df[mask].groupby(['Año'])['Ventas_NA'].sum().reset_index()
     total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
     st.bar_chart(total_por_grupo.set_index('Año'))
 
