@@ -7,6 +7,9 @@
 import streamlit as st
 import types  # Importa types en lugar de builtins
 import pandas as pd
+import pip
+pip.main(["install","matplotlib"])
+
 import matplotlib.pyplot as plt
 import seaborn as sns
 import altair as alt
