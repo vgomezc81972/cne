@@ -5,9 +5,6 @@
 # cargar librerias
 
 import streamlit as st
-import requests
-from streamlit_lottie import st_lottie
-from PIL import Image
 import types  # Importa types en lugar de builtins
 import pandas as pd
 import matplotlib.pyplot as plt
