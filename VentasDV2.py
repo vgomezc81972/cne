@@ -26,11 +26,11 @@ def load_data(url):
 dataset = pd.read_excel('Ventas_Videojuegos.xlsx')
 #url = "https://github.com/Vitotoju/Compensar/raw/main/Ventas_Videojuegos.xlsx"
 #dataset = load_data(url)
+#st.write(dataset)
 
 # crear la lista headers
 headers = ["Nombre","Plataforma","Año","Genero","Editorial","Ventas_NA","Ventas_EU","Ventas_JP","Ventas_Otros","Ventas_Global"]
 dataset.columns = headers
-
 df = dataset[['Plataforma','Año','Genero','Editorial','Ventas_NA','Ventas_EU','Ventas_JP','Ventas_Otros','Ventas_Global']].copy()
 
 # Cadena Más Común (Moda)  -  para reemplazar los datos vacios con el valor más frecuente o la moda
@@ -59,6 +59,7 @@ with st.container():
   st.subheader("Bienvenidos a mi sitio web ddd :wave:")
   st.title("Ventas de Video Juegos")
   st.write(" Esta es una pagina para mostrar los resultados")
+  st.write(df)
   st.write("[Mas informacion >>>](https://github.com/Vitotoju)")
 
 with st.container():
@@ -73,8 +74,8 @@ with left_column:
     total_por_grupo = df.groupby(['Genero'])['Ventas_NA'].sum().reset_index()
     total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
     st.bar_chart(total_por_grupo.set_index('Genero'))
-    for i, row in total_por_grupo.iterrows():
-        st.text(f"{row['Genero']}: {row['Total_Grupo']}")
+    #for i, row in total_por_grupo.iterrows():
+    #    st.text(f"{row['Genero']}: {row['Total_Grupo']}")
 
     st.set_option('deprecation.showPyplotGlobalUse', False)  # Para evitar advertencias
 
