@@ -7,13 +7,6 @@
 import streamlit as st
 import types  # Importa types en lugar de builtins
 import pandas as pd
-import pip
-pip.main(["install","matplotlib"])
-
-# import matplotlib.pyplot as plt
-import seaborn as sns
-import altair as alt
-import numpy as np
 
 # cargar datos,  trasnformacion datos , limpieza de datos
 
@@ -58,7 +51,6 @@ df['Genero'] = df['Genero'].astype(str)
 df['Editorial'] = df['Editorial'].astype(str)
 
 # Crear gráficas de barras
-fig, axes = plt.subplots(nrows=1, ncols=1, figsize=(7, 5))
 
 with st.container():
   st.subheader("Bienvenidos a mi sitio web ddd :wave:")
@@ -74,43 +66,22 @@ left_column, right_column = st.columns(2)
 with left_column:
     st.header("Mi objetivo")
     
-    st.write("Esta iamgen muestra Total  ventas x genero")
-    sns.set(style="whitegrid")
-    plt.figure(figsize=(8, 6))
-    total_por_grupo =df.groupby(['Genero'])['Ventas_NA'].sum().reset_index()
+    st.write("Esta imagen muestra Total Ventas x Género")
+    total_por_grupo = df.groupby(['Genero'])['Ventas_NA'].sum().reset_index()
     total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
+    st.bar_chart(total_por_grupo.set_index('Genero'))
+    for i, row in total_por_grupo.iterrows():
+        st.text(f"{row['Genero']}: {row['Total_Grupo']}")
 
-    ax = sns.barplot(data=total_por_grupo, x='Genero', y='Total_Grupo', palette='viridis')
-    ax.set_title('Distribución de Ventas por Género')
-    ax.set_xlabel('Género')
-    ax.set_ylabel('Ventas_NA')
+    st.set_option('deprecation.showPyplotGlobalUse', False)  # Para evitar advertencias
 
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, horizontalalignment='right')
-    for p in ax.patches:
-        ax.annotate(f'{p.get_height():.2f}', (p.get_x() + p.get_width() / 2., p.get_height()),
-                    ha='center', va='bottom', fontsize=10, color='black', weight='bold')
-    st.pyplot(plt)
 
 with right_column:
     st.header("Mi objetivo")
     
-    st.write("Esta iamgen muestra Total  Ventas x Año")
-    sns.set(style="whitegrid")
-    plt.figure(figsize=(8, 6))
-    total_por_grupo =df.groupby(['Año'])['Ventas_NA'].sum().reset_index()
+    st.write("Esta imagen muestra Total Ventas x Año")
+    total_por_grupo = df.groupby(['Año'])['Ventas_NA'].sum().reset_index()
     total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
-
-    ax = sns.barplot(data=total_por_grupo, x='Año', y='Total_Grupo', palette='viridis')
-    ax.set_title('Distribución de Ventas por Año')
-    ax.set_xlabel('Año')
-    ax.set_ylabel('Ventas_NA')
-
-    ax.set_xticklabels(ax.get_xticklabels(), rotation=45, horizontalalignment='right', fontsize=8)
-    ax.tick_params(axis='x', labelsize=8)
-    for p in ax.patches:
-        ax.annotate(f'{p.get_height():.2f}', (p.get_x() + p.get_width() / 2., p.get_height()),
-                    ha='center', va='bottom', fontsize=6, color='black', weight='bold')
-
-    st.pyplot(plt)
+    st.bar_chart(total_por_grupo.set_index('Año'))
 
 
