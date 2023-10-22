@@ -9,6 +9,7 @@ import types  # Importa types en lugar de builtins
 import pandas as pd
 import pip
 pip.main(["install", "openpyxl"])
+import plotly.express as px
 
 # cargar datos,  trasnformacion datos , limpieza de datos
 
@@ -84,8 +85,10 @@ with st.container():
                             )
 
   mask = (df['Año'].between(*anual_selector)&(df['Plataforma'].isin(plataforma_selector))&(df['Genero'].isin(genero_selector)))
-  st.write(df)
-  st.write("[Mas informacion >>>](https://github.com/Vitotoju)")
+#  st.write(df)
+
+  numero_resultados = df[mask].shape[0]
+  st.markdown(f'*Resultados Disponibles:{numero_resultados}*')
 
 with st.container():
   st.write("---")
@@ -117,14 +120,17 @@ with st.container():
     total_por_grupo = df[mask].groupby(['Genero'])['Ventas_NA'].sum().reset_index()
     total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
     st.bar_chart(total_por_grupo.set_index('Genero'))
-    #for i, row in total_por_grupo.iterrows():
-    #    st.text(f"{row['Genero']}: {row['Total_Grupo']}")
+    #st.bar_chart.update_traces(texttemplate='%{text}', textposition='outside')
 
 with right_column:
     st.header("Mi objetivo")
     
     st.write("Esta imagen muestra Total Ventas x Año")
-    total_por_grupo = df[mask].groupby(['Año'])['Ventas_NA'].sum().reset_index()
-    total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
-    st.bar_chart(total_por_grupo.set_index('Año'))
-
+    pla_por_grupo = df[mask].groupby(['Plataforma'])['Ventas_NA'].sum().reset_index()
+    pla_por_grupo = pla_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
+    pla_por_grupo = pla_por_grupo.reset_index()
+    
+    #bar_chart = px.bar(pla_por_grupo, x='Plataforma', y='Total_Grupo', title='Total de Ventas por Plataforma')
+    bar_chart = px.bar(pla_por_grupo, x='Plataforma', y='Total_Grupo', color_discrete_sequence = ['#f5b632']*len(pla_por_grupo), title='Total de Ventas por Plataforma')
+    #bar_chart.update_traces(texttemplate='%{text}', textposition='outside')
+    st.plotly_chart(bar_chart)
