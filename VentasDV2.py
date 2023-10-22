@@ -7,6 +7,8 @@
 import streamlit as st
 import types  # Importa types en lugar de builtins
 import pandas as pd
+import pip
+pip.main(["install", "openpyxl"])
 
 # cargar datos,  trasnformacion datos , limpieza de datos
 
@@ -21,8 +23,9 @@ def load_data(url):
     return pd.read_excel(url)
 
 # Puedes ajustar la URL del archivo a tu ubicación
-url = "https://github.com/Vitotoju/Compensar/raw/main/Ventas_Videojuegos.xlsx"
-dataset = load_data(url)
+dataset = pd.read_excel('Ventas_Videojuegos.xlsx')
+#url = "https://github.com/Vitotoju/Compensar/raw/main/Ventas_Videojuegos.xlsx"
+#dataset = load_data(url)
 
 # crear la lista headers
 headers = ["Nombre","Plataforma","Año","Genero","Editorial","Ventas_NA","Ventas_EU","Ventas_JP","Ventas_Otros","Ventas_Global"]
