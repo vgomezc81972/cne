@@ -23,9 +23,9 @@ def load_data(url):
     return pd.read_excel(url)
 
 # Puedes ajustar la URL del archivo a tu ubicación
-dataset = pd.read_excel('Ventas_Videojuegos.xlsx')
-#url = "https://github.com/Vitotoju/Compensar/raw/main/Ventas_Videojuegos.xlsx"
-#dataset = load_data(url)
+#dataset = pd.read_excel('Ventas_Videojuegos.xlsx')
+url = "https://github.com/Vitotoju/Compensar/raw/main/Ventas_Videojuegos.xlsx"
+dataset = load_data(url)
 #st.write(dataset)
 
 # crear la lista headers
