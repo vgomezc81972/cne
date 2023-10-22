@@ -9,6 +9,8 @@ import types  # Importa types en lugar de builtins
 import pandas as pd
 import pip
 pip.main(["install", "openpyxl"])
+import pip
+pip.main(["install", "plotly.express"])
 import plotly.express as px
 
 # cargar datos,  trasnformacion datos , limpieza de datos
