@@ -65,7 +65,6 @@ with st.container():
 with st.container():
   st.write("---")
   left_column, right_column = st.columns(2)
-left_column, right_column = st.columns(2)
 
 with left_column:
     st.header("Mi objetivo")
@@ -88,4 +87,28 @@ with right_column:
     total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
     st.bar_chart(total_por_grupo.set_index('Año'))
 
+with st.container():
+  st.write("---")
+  left_column, right_column = st.columns(2)
+
+  with left_column:
+    st.header("Mi objetivo")
+    
+    st.write("Esta imagen muestra Total Ventas x Género")
+    total_por_grupo = df.groupby(['Genero'])['Ventas_NA'].sum().reset_index()
+    total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
+    st.bar_chart(total_por_grupo.set_index('Genero'))
+    #for i, row in total_por_grupo.iterrows():
+    #    st.text(f"{row['Genero']}: {row['Total_Grupo']}")
+
+    st.set_option('deprecation.showPyplotGlobalUse', False)  # Para evitar advertencias
+
+
+with right_column:
+    st.header("Mi objetivo")
+    
+    st.write("Esta imagen muestra Total Ventas x Año")
+    total_por_grupo = df.groupby(['Año'])['Ventas_NA'].sum().reset_index()
+    total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
+    st.bar_chart(total_por_grupo.set_index('Año'))
 
