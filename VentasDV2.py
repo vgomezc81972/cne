@@ -9,9 +9,8 @@ import types  # Importa types en lugar de builtins
 import pandas as pd
 import pip
 pip.main(["install", "openpyxl"])
-import pip
-pip.main(["install", "plotly.express"])
-import plotly.express as px
+import altair as alt
+
 
 # cargar datos,  trasnformacion datos , limpieza de datos
 
@@ -122,17 +121,19 @@ with st.container():
     total_por_grupo = df[mask].groupby(['Genero'])['Ventas_NA'].sum().reset_index()
     total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
     st.bar_chart(total_por_grupo.set_index('Genero'))
+    #bar_chart = px.bar(pla_por_grupo, x='Plataforma', y='Total_Grupo', color_discrete_sequence = ['#f5b632']*len(pla_por_grupo), title='Total de Ventas por Plataforma')
     #st.bar_chart.update_traces(texttemplate='%{text}', textposition='outside')
 
 with right_column:
     st.header("Mi objetivo")
     
     st.write("Esta imagen muestra Total Ventas x Año")
-    pla_por_grupo = df[mask].groupby(['Plataforma'])['Ventas_NA'].sum().reset_index()
-    pla_por_grupo = pla_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
-    pla_por_grupo = pla_por_grupo.reset_index()
-    
-    #bar_chart = px.bar(pla_por_grupo, x='Plataforma', y='Total_Grupo', title='Total de Ventas por Plataforma')
-    bar_chart = px.bar(pla_por_grupo, x='Plataforma', y='Total_Grupo', color_discrete_sequence = ['#f5b632']*len(pla_por_grupo), title='Total de Ventas por Plataforma')
-    #bar_chart.update_traces(texttemplate='%{text}', textposition='outside')
-    st.plotly_chart(bar_chart)
+    torta_por_grupo = df[mask].groupby(['Plataforma'])['Ventas_NA'].sum().reset_index()
+    torta_por_grupo = torta_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
+    torta_por_grupo = torta_por_grupo.reset_index()
+
+    # Especifica explícitamente el tipo de datos para Total_Grupo
+    torta_por_grupo['Total_Grupo'] = torta_por_grupo['Total_Grupo'].astype(float)
+
+    c = alt.Chart(torta_por_grupo).mark_arc().encode(theta="Total_Grupo:Q", color="Plataforma:N")
+    st.altair_chart(c)
