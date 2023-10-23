@@ -86,54 +86,109 @@ with st.container():
                             )
 
   mask = (df['Año'].between(*anual_selector)&(df['Plataforma'].isin(plataforma_selector))&(df['Genero'].isin(genero_selector)))
-#  st.write(df)
+  st.write(df)
 
   numero_resultados = df[mask].shape[0]
   st.markdown(f'*Resultados Disponibles:{numero_resultados}*')
 
 with st.container():
   st.write("---")
-  left_column, right_column = st.columns(2)
+  left_column , right_column = st.columns(2)
 
-with left_column:
-    st.header("Mi objetivo")
-    
-    st.write("Esta imagen muestra Total Ventas x Género")
-    total_por_grupo = df[mask].groupby(['Genero'])['Ventas_NA'].sum().reset_index()
-    total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
-    st.bar_chart(total_por_grupo.set_index('Genero'))
-with right_column:
-    st.header("Mi objetivo")
-    
-    st.write("Esta imagen muestra Total Ventas x Año")
-    total_por_grupo = df[mask].groupby(['Año'])['Ventas_NA'].sum().reset_index()
-    total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
-    st.bar_chart(total_por_grupo.set_index('Año'))
+  totalg_por_grupo_na = df[mask].groupby(['Genero'])['Ventas_NA'].sum().reset_index()
+  totalg_por_grupo_na = totalg_por_grupo_na.rename(columns={'Ventas_NA': 'Total_Grupo'})
+  totalg_por_grupo_eu = df[mask].groupby(['Genero'])['Ventas_EU'].sum().reset_index()
+  totalg_por_grupo_eu = totalg_por_grupo_eu.rename(columns={'Ventas_EU': 'Total_Grupo'})
+  totalg_por_grupo_jp = df[mask].groupby(['Genero'])['Ventas_JP'].sum().reset_index()
+  totalg_por_grupo_jp = totalg_por_grupo_jp.rename(columns={'Ventas_JP': 'Total_Grupo'})
+  totalg_por_grupo_otros = df[mask].groupby(['Genero'])['Ventas_Otros'].sum().reset_index()
+  totalg_por_grupo_otros = totalg_por_grupo_otros.rename(columns={'Ventas_Otros': 'Total_Grupo'})
+  totalg_por_grupo = pd.concat([totalg_por_grupo_na, totalg_por_grupo_eu, totalg_por_grupo_jp, totalg_por_grupo_otros],
+                               keys=['Ventas NA', 'Ventas EU', 'Ventas JP', 'Ventas Otros'], names=['Tipo']).reset_index()
+  
+  totalp_por_grupo_na = df[mask].groupby(['Plataforma'])['Ventas_NA'].sum().reset_index()
+  totalp_por_grupo_na = totalp_por_grupo_na.rename(columns={'Ventas_NA': 'Total_Grupo'})
+  totalp_por_grupo_eu = df[mask].groupby(['Plataforma'])['Ventas_EU'].sum().reset_index()
+  totalp_por_grupo_eu = totalp_por_grupo_eu.rename(columns={'Ventas_EU': 'Total_Grupo'})
+  totalp_por_grupo_jp = df[mask].groupby(['Plataforma'])['Ventas_JP'].sum().reset_index()
+  totalp_por_grupo_jp = totalp_por_grupo_jp.rename(columns={'Ventas_JP': 'Total_Grupo'})
+  totalp_por_grupo_otros = df[mask].groupby(['Plataforma'])['Ventas_Otros'].sum().reset_index()
+  totalp_por_grupo_otros = totalp_por_grupo_otros.rename(columns={'Ventas_Otros': 'Total_Grupo'})
+  totalp_por_grupo = pd.concat([totalp_por_grupo_na, totalp_por_grupo_eu, totalp_por_grupo_jp, totalp_por_grupo_otros],
+                               keys=['Ventas NA', 'Ventas EU', 'Ventas JP', 'Ventas Otros'], names=['Tipo']).reset_index()
+  
+  totale_por_grupo_na = df[mask].groupby(['Editorial'])['Ventas_NA'].sum().reset_index()
+  totale_por_grupo_na = totale_por_grupo_na.rename(columns={'Ventas_NA': 'Total_Grupo'})
+  totale_por_grupo_eu = df[mask].groupby(['Editorial'])['Ventas_EU'].sum().reset_index()
+  totale_por_grupo_eu = totale_por_grupo_eu.rename(columns={'Ventas_EU': 'Total_Grupo'})
+  totale_por_grupo_jp = df[mask].groupby(['Editorial'])['Ventas_JP'].sum().reset_index()
+  totale_por_grupo_jp = totale_por_grupo_jp.rename(columns={'Ventas_JP': 'Total_Grupo'})
+  totale_por_grupo_otros = df[mask].groupby(['Editorial'])['Ventas_Otros'].sum().reset_index()
+  totale_por_grupo_otros = totale_por_grupo_otros.rename(columns={'Ventas_Otros': 'Total_Grupo'})
+  totale_por_grupo = pd.concat([totale_por_grupo_na, totale_por_grupo_eu, totale_por_grupo_jp, totale_por_grupo_otros],
+                               keys=['Ventas NA', 'Ventas EU', 'Ventas JP', 'Ventas Otros'], names=['Tipo']).reset_index()
 
 with st.container():
-  st.write("---")
-  left_column, right_column = st.columns(2)
+    st.write("---")
+    st.header("Ventas Genero")
+    st.write("Esta imagen muestra Total Ventas de todos los tipos")
+    chart = alt.Chart(totalg_por_grupo).mark_bar().encode(
+        x=alt.X('Genero:N', title="Género"),
+        y=alt.Y('Total_Grupo:Q', title="Total de Ventas"),
+        color=alt.Color('Tipo:N', title="Tipo de Ventas")
+    ).properties(width=800, height=400)
+    st.altair_chart(chart)
 
-  with left_column:
-    st.header("Mi objetivo")
-    
-    st.write("Esta imagen muestra Total Ventas x Género")
-    total_por_grupo = df[mask].groupby(['Genero'])['Ventas_NA'].sum().reset_index()
-    total_por_grupo = total_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
-    st.bar_chart(total_por_grupo.set_index('Genero'))
-    #bar_chart = px.bar(pla_por_grupo, x='Plataforma', y='Total_Grupo', color_discrete_sequence = ['#f5b632']*len(pla_por_grupo), title='Total de Ventas por Plataforma')
-    #st.bar_chart.update_traces(texttemplate='%{text}', textposition='outside')
+with st.container():
+    st.write("---")
+    st.header("Ventas Plataforma")
+    st.write("Esta imagen muestra Total Ventas de todos los tipos")
+    chart = alt.Chart(totalp_por_grupo).mark_bar().encode(
+        x=alt.X('Plataforma:N', title="Plataforma"),
+        y=alt.Y('Total_Grupo:Q', title="Total de Ventas"),
+        color=alt.Color('Tipo:N', title="Tipo de Ventas")
+    ).properties(width=800, height=400)
+    st.altair_chart(chart)
 
-with right_column:
-    st.header("Mi objetivo")
-    
+with st.container():
+    st.write("---")
+    st.header("Ventas Editorial")
+    st.write("Esta imagen muestra Total Ventas de todos los tipos")
+    chart = alt.Chart(totale_por_grupo).mark_bar().encode(
+        x=alt.X('Editorial:N', title="Editorial"),
+        y=alt.Y('Total_Grupo:Q', title="Total de Ventas"),
+        color=alt.Color('Tipo:N', title="Tipo de Ventas")
+    ).properties(width=800, height=400)
+    st.altair_chart(chart)
+
+with st.container():
+    st.write("---")
+    left_column, right_column = st.columns(2)
+
+with left_column:
+    st.write("---") 
+    st.header("Ventas Genero")   
     st.write("Esta imagen muestra Total Ventas x Año")
-    torta_por_grupo = df[mask].groupby(['Plataforma'])['Ventas_NA'].sum().reset_index()
-    torta_por_grupo = torta_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
-    torta_por_grupo = torta_por_grupo.reset_index()
+    tortag_por_grupo = df[mask].groupby(['Genero'])['Ventas_NA'].sum().reset_index()
+    tortag_por_grupo = tortag_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
+    tortag_por_grupo = tortag_por_grupo.reset_index()
 
     # Especifica explícitamente el tipo de datos para Total_Grupo
-    torta_por_grupo['Total_Grupo'] = torta_por_grupo['Total_Grupo'].astype(float)
+    tortag_por_grupo['Total_Grupo'] = tortag_por_grupo['Total_Grupo'].astype(float)
 
-    c = alt.Chart(torta_por_grupo).mark_arc().encode(theta="Total_Grupo:Q", color="Plataforma:N")
+    c = alt.Chart(tortag_por_grupo).mark_arc().encode(theta="Total_Grupo:Q", color="Genero:N")
+    st.altair_chart(c)
+
+with right_column:
+    st.write("---")
+    st.header("Ventas Plataforma")
+    st.write("Esta imagen muestra Total Ventas x Año")
+    tortap_por_grupo = df[mask].groupby(['Plataforma'])['Ventas_NA'].sum().reset_index()
+    tortap_por_grupo = tortap_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
+    tortap_por_grupo = tortap_por_grupo.reset_index()
+
+    # Especifica explícitamente el tipo de datos para Total_Grupo
+    tortap_por_grupo['Total_Grupo'] = tortap_por_grupo['Total_Grupo'].astype(float)
+
+    c = alt.Chart(tortap_por_grupo).mark_arc().encode(theta="Total_Grupo:Q", color="Plataforma:N")
     st.altair_chart(c)
