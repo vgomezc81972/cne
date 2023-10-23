@@ -56,12 +56,12 @@ df['Genero'] = df['Genero'].astype(str)
 df['Editorial'] = df['Editorial'].astype(str)
 
 # Filtros interactivos
-#filtro_ano = st.sidebar.selectbox('Filtrar por Año', df['Año'].unique())
 filtro_anos = df['Año'].unique().tolist()
 filtro_plataforma = df['Plataforma'].unique().tolist()
 filtro_genero = df['Genero'].unique().tolist()
-filtro_editorial = st.sidebar.selectbox('Filtrar por Editorial', df['Editorial'].unique())
 
+# Filtros Laterales
+filtro_editorial = st.sidebar.selectbox('Filtrar por Editorial', df['Editorial'].unique())
 
 # Crear gráficas de barras
 
@@ -163,32 +163,14 @@ with st.container():
 
 with st.container():
     st.write("---")
-    left_column, right_column = st.columns(2)
-
-with left_column:
-    st.write("---") 
-    st.header("Ventas Genero")   
-    st.write("Esta imagen muestra Total Ventas x Año")
-    tortag_por_grupo = df[mask].groupby(['Genero'])['Ventas_NA'].sum().reset_index()
-    tortag_por_grupo = tortag_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
-    tortag_por_grupo = tortag_por_grupo.reset_index()
-
-    # Especifica explícitamente el tipo de datos para Total_Grupo
-    tortag_por_grupo['Total_Grupo'] = tortag_por_grupo['Total_Grupo'].astype(float)
-
-    c = alt.Chart(tortag_por_grupo).mark_arc().encode(theta="Total_Grupo:Q", color="Genero:N")
-    st.altair_chart(c)
-
-with right_column:
-    st.write("---")
-    st.header("Ventas Plataforma")
-    st.write("Esta imagen muestra Total Ventas x Año")
-    tortap_por_grupo = df[mask].groupby(['Plataforma'])['Ventas_NA'].sum().reset_index()
-    tortap_por_grupo = tortap_por_grupo.rename(columns={'Ventas_NA': 'Total_Grupo'})
-    tortap_por_grupo = tortap_por_grupo.reset_index()
-
-    # Especifica explícitamente el tipo de datos para Total_Grupo
-    tortap_por_grupo['Total_Grupo'] = tortap_por_grupo['Total_Grupo'].astype(float)
-
-    c = alt.Chart(tortap_por_grupo).mark_arc().encode(theta="Total_Grupo:Q", color="Plataforma:N")
-    st.altair_chart(c)
+    st.header("Ventas x Año")
+    df['Año'] = pd.to_datetime(df['Año'], format='%Y')
+    totala_por_grupo = df[mask].groupby(['Año'])[['Ventas_NA', 'Ventas_EU', 'Ventas_JP', 'Ventas_Otros']].sum().reset_index()
+    # Reformatear los datos para que estén en formato largo
+    totala_por_grupo = totala_por_grupo.melt(id_vars=['Año'], var_name='Tipo', value_name='Total_Grupo')
+    chart = alt.Chart(totala_por_grupo).mark_line().encode(
+        x=alt.X('Año:T', title="Año"),
+        y=alt.Y('Total_Grupo:Q', title="Total de Ventas"),
+        color=alt.Color('Tipo:N', title="Tipo de Ventas")
+    ).properties(width=800, height=400)
+    st.altair_chart(chart)
