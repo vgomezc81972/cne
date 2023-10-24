@@ -220,7 +220,7 @@ with st.container():
         x=alt.X('Editorial:N', title="Editorial"),
         y=alt.Y('Total_Grupo:Q', title="Total de Ventas"),
         color=alt.Color('Tipo:N', title="Tipo de Ventas")
-    ).properties(width=800, height=400)
+    ).properties(width=1200, height=1000)
     st.altair_chart(chart)
 
 with st.container():
