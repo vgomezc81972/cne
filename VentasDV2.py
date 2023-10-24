@@ -3,6 +3,7 @@
 #%%writefile ventasDV2.py
 
 # cargar librerias
+from typing import List, Tuple
 
 import streamlit as st
 import types  # Importa types en lugar de builtins
@@ -12,7 +13,16 @@ pip.main(["install", "openpyxl"])
 import altair as alt
 
 
-# cargar datos,  trasnformacion datos , limpieza de datos
+def set_page_config():
+    st.set_page_config(
+        page_title="Sales Dashboard",
+        page_icon=":bar_chart:",
+        layout="wide",
+        initial_sidebar_state="expanded",
+    )
+    st.markdown("<style> footer {visibility: hidden;} </style>", unsafe_allow_html=True)
+
+set_page_config()
 
 # Define una función de hash personalizada para tu función
 def my_hash_func(func):
@@ -24,11 +34,8 @@ def load_data(url):
     # Cargamos los datos desde el archivo Excel
     return pd.read_excel(url)
 
-# Puedes ajustar la URL del archivo a tu ubicación
-#dataset = pd.read_excel('Ventas_Videojuegos.xlsx')
 url = "https://github.com/Vitotoju/Compensar/raw/main/Ventas_Videojuegos.xlsx"
 dataset = load_data(url)
-#st.write(dataset)
 
 # crear la lista headers
 headers = ["Nombre","Plataforma","Año","Genero","Editorial","Ventas_NA","Ventas_EU","Ventas_JP","Ventas_Otros","Ventas_Global"]
@@ -55,10 +62,14 @@ df['Plataforma'] = df['Plataforma'].astype(str)
 df['Genero'] = df['Genero'].astype(str)
 df['Editorial'] = df['Editorial'].astype(str)
 
+st.sidebar.header("Opciones a filtrar: ")
+
 # Filtros Laterales
 filtro_plataformas = st.sidebar.selectbox('Filtrar por Plataforma', ['Todos'] + df['Plataforma'].unique().tolist())
 filtro_generos = st.sidebar.selectbox('Filtrar por Género', ['Todos'] + df['Genero'].unique().tolist())
 filtro_editoriall = st.sidebar.selectbox('Filtrar por Editorial', ['Todos'] + df['Editorial'].unique().tolist())
+
+st.sidebar.info('Created by Victor - Diana')
 
 # Aplicar filtros a los datos
 filtro_anos = df['Año'].unique().tolist()
@@ -78,13 +89,11 @@ if filtro_editoriall == 'Todos':
 else:
     mask_editorial = df['Editorial'] == filtro_editoriall
 
-
-
 # Crear gráficas de barras
 
 with st.container():
   st.subheader("Bienvenidos a mi sitio web ddd :wave:")
-  st.title("Ventas de Video Juegos")
+  st.title("📊 Ventas de Video Juegos")
   st.write(" Esta es una pagina para mostrar los resultados")
 
   anual_selector = st.slider('Año de ventas :',
@@ -97,11 +106,34 @@ with st.container():
 
   # Combinar las máscaras de filtro
   mask = df['Año'].between(*anual_selector) & mask_plataforma & mask_genero & mask_editorial
-  
-  st.write(df)
-
   numero_resultados = df[mask].shape[0]
   st.markdown(f'*Resultados Disponibles:{numero_resultados}*')
+
+## KPIs
+
+  @st.cache_data
+  def calculate_kpis(df: pd.DataFrame) -> List[float]:
+        total_ventas =(df[mask]['Ventas_Global'].sum())
+        Vlr_Ventas = f"{total_ventas:.2f}M"
+        total_orders = df[mask]['Nombre'].nunique()
+        Promedio_ventas = f"{total_ventas / total_orders:.2f}K"
+        return [Vlr_Ventas, total_orders, Promedio_ventas, total_orders]
+  
+
+  def display_kpi_metrics(kpis: List[float], kpi_names: List[str]):
+        st.header("KPI Metrics")
+        for i, (col, (kpi_name, kpi_value)) in enumerate(zip(st.columns(4), zip(kpi_names, kpis))):
+            col.metric(label=kpi_name, value=kpi_value)
+
+
+  kpis = calculate_kpis(df)
+  kpi_names = ["Vlr_Ventas", "Cantidad Videojuegos", "Promedio Ventas", "Total Video Juegos"]
+  display_kpi_metrics(kpis, kpi_names)
+
+
+  st.write("---")
+  st.subheader("Top 10 Products by Sales")
+  st.write(df[mask].head(10))
 
 with st.container():
   st.write("---")
@@ -144,22 +176,40 @@ with st.container():
     st.write("---")
     st.header("Ventas Genero")
     st.write("Esta imagen muestra Total Ventas de todos los tipos")
-    chart = alt.Chart(totalg_por_grupo).mark_bar().encode(
+    bars = alt.Chart(totalg_por_grupo).mark_bar().encode(
         x=alt.X('Genero:N', title="Género"),
         y=alt.Y('Total_Grupo:Q', title="Total de Ventas"),
+        xOffset="Tipo:N",
         color=alt.Color('Tipo:N', title="Tipo de Ventas")
-    ).properties(width=800, height=400)
+    ).properties(width=1000, height=400)
+
+    text = alt.Chart(totalg_por_grupo).mark_text(dx=3, dy=-15, color='black').encode(
+        x=alt.X('Genero:N'),
+        y=alt.Y('sum(Total_Grupo):Q',).stack('zero'),
+        xOffset="Tipo:N",
+        detail='Tipo:N',
+        text=alt.Text('sum(Total_Grupo):Q', format='.1f')
+    )
+    chart = (bars + text)
     st.altair_chart(chart)
 
 with st.container():
     st.write("---")
     st.header("Ventas Plataforma")
     st.write("Esta imagen muestra Total Ventas de todos los tipos")
-    chart = alt.Chart(totalp_por_grupo).mark_bar().encode(
-        x=alt.X('Plataforma:N', title="Plataforma"),
-        y=alt.Y('Total_Grupo:Q', title="Total de Ventas"),
-        color=alt.Color('Tipo:N', title="Tipo de Ventas")
-    ).properties(width=800, height=400)
+    bars = alt.Chart(totalp_por_grupo).mark_bar().encode(
+        x=alt.X('sum(Total_Grupo):Q', title="Total de Ventas").stack('zero'),
+        y=alt.Y('Plataforma:N', title="Plataforma"),
+        color=alt.Color('Tipo', title="Tipo de Ventas")
+    ).properties(width=800, height=800)
+
+    text = alt.Chart(totalp_por_grupo).mark_text(dx=-15, dy=3, color='white').encode(
+        x=alt.X('sum(Total_Grupo):Q',).stack('zero'),
+        y=alt.Y('Plataforma:N'),
+        detail='Tipo:N',
+        text=alt.Text('sum(Total_Grupo):Q', format='.1f')
+    )
+    chart = (bars + text)
     st.altair_chart(chart)
 
 with st.container():
@@ -186,5 +236,6 @@ with st.container():
         color=alt.Color('Tipo:N', title="Tipo de Ventas")
     ).properties(width=800, height=400)
     st.altair_chart(chart)
+    st.write("[Analisis >>>]              Esta es un aprueba ")
 
 # %%
