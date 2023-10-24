@@ -55,13 +55,30 @@ df['Plataforma'] = df['Plataforma'].astype(str)
 df['Genero'] = df['Genero'].astype(str)
 df['Editorial'] = df['Editorial'].astype(str)
 
-# Filtros interactivos
-filtro_anos = df['Año'].unique().tolist()
-filtro_plataforma = df['Plataforma'].unique().tolist()
-filtro_genero = df['Genero'].unique().tolist()
-
 # Filtros Laterales
-filtro_editorial = st.sidebar.selectbox('Filtrar por Editorial', df['Editorial'].unique())
+filtro_plataformas = st.sidebar.selectbox('Filtrar por Plataforma', ['Todos'] + df['Plataforma'].unique().tolist())
+filtro_generos = st.sidebar.selectbox('Filtrar por Género', ['Todos'] + df['Genero'].unique().tolist())
+filtro_editoriall = st.sidebar.selectbox('Filtrar por Editorial', ['Todos'] + df['Editorial'].unique().tolist())
+
+# Aplicar filtros a los datos
+filtro_anos = df['Año'].unique().tolist()
+
+if filtro_plataformas == 'Todos':
+    mask_plataforma = df['Plataforma'].notna()
+else:
+    mask_plataforma = df['Plataforma'] == filtro_plataformas
+
+if filtro_generos == 'Todos':
+    mask_genero = df['Genero'].notna()
+else:
+    mask_genero = df['Genero'] == filtro_generos
+
+if filtro_editoriall == 'Todos':
+    mask_editorial = df['Editorial'].notna()
+else:
+    mask_editorial = df['Editorial'] == filtro_editoriall
+
+
 
 # Crear gráficas de barras
 
@@ -69,23 +86,18 @@ with st.container():
   st.subheader("Bienvenidos a mi sitio web ddd :wave:")
   st.title("Ventas de Video Juegos")
   st.write(" Esta es una pagina para mostrar los resultados")
+
   anual_selector = st.slider('Año de ventas :',
                            min_value = min(filtro_anos),
                            max_value = max(filtro_anos),
                            value = (min(filtro_anos),max(filtro_anos))
                            )
 
-  plataforma_selector = st.multiselect('Plataforma :',
-                            filtro_plataforma,
-                            default = filtro_plataforma
-                            )
+# Aplicar filtros a los datos
 
-  genero_selector = st.multiselect('Genero :',
-                            filtro_genero,
-                            default = filtro_genero
-                            )
-
-  mask = (df['Año'].between(*anual_selector)&(df['Plataforma'].isin(plataforma_selector))&(df['Genero'].isin(genero_selector)))
+  # Combinar las máscaras de filtro
+  mask = df['Año'].between(*anual_selector) & mask_plataforma & mask_genero & mask_editorial
+  
   st.write(df)
 
   numero_resultados = df[mask].shape[0]
@@ -174,3 +186,5 @@ with st.container():
         color=alt.Color('Tipo:N', title="Tipo de Ventas")
     ).properties(width=800, height=400)
     st.altair_chart(chart)
+
+# %%
