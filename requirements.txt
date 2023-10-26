@@ -1,4 +1,2 @@
 streamlit
 openpyxl>=3.0.10
-py -m pip install -r requirements.txt
-py -m pip install openpyxl==3.0.10
