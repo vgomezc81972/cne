@@ -92,7 +92,7 @@ else:
 # Crear gráficas de barras
 
 with st.container():
-  st.subheader("Bienvenidos a mi sitio web ddd :wave:")
+  st.subheader("Bienvenidos a mi sitio web VENTAS :wave:")
   st.title("📊 Ventas de Video Juegos")
   st.write(" Esta es una pagina para mostrar los resultados")
 
@@ -192,6 +192,11 @@ with st.container():
     )
     chart = (bars + text)
     st.altair_chart(chart)
+with st.expander("Análisis"):
+    st.write("1. Hay una tendencia siempre que la Region NA supera en ventas\n"
+             "2. El genero que mas vendio es : Action\n"
+             "3. El genero que menores ventas tuvo fue : Strategy\n"
+             "4. La Region que menos ventas tuvo fue Otros")
 
 with st.container():
     st.write("---")
@@ -211,6 +216,29 @@ with st.container():
     )
     chart = (bars + text)
     st.altair_chart(chart)
+
+with st.expander("Análisis"):
+    st.write("1. Hay una tendencia siempre que la Region NA supera en ventas\n"
+             "2. La Plataforma que mas vendio fue : PS2\n"
+             "3. Las Plataformas que no tuvieron ventas fueron : 3DO, GG, NG, PCFX, TG16, WS\n"
+             "4. Las Plataforma con mas ventas fueron : PS2, X360, PS3, Wii")
+  
+# Agregar los totales por plataforma
+total_por_plataforma = totalp_por_grupo.groupby('Plataforma')['Total_Grupo'].sum().reset_index()
+
+with st.container():
+    st.write("---")
+    st.header("Ventas Plataforma")
+    st.write("Esta imagen muestra Total Ventas de todos los tipos")
+    
+    # Crear un gráfico de torta con Altair
+    pie_chart = alt.Chart(total_por_plataforma).mark_arc().encode(
+        color=alt.Color('Plataforma:N', title="Plataforma"),
+        theta=alt.Theta('Total_Grupo:Q', title="Total de Ventas"),
+        tooltip=['Plataforma:N', alt.Tooltip('Total_Grupo:Q', format='.1f')]
+    ).properties(width=400, height=400)
+
+    st.altair_chart(pie_chart)
 
 with st.container():
     st.write("---")
@@ -236,6 +264,10 @@ with st.container():
         color=alt.Color('Tipo:N', title="Tipo de Ventas")
     ).properties(width=800, height=400)
     st.altair_chart(chart)
-    st.write("[Analisis >>>]              Esta es un aprueba ")
+with st.expander("Análisis"):
+    st.write("1. Se evidencia que el año 2008, tuvo mas ventas en todas las regiones\n"
+             "2. Se Evidencia que la decada los 80 fueron las ventas mas bajas\n"
+             "3. La Region que mas ventas tuvo fue NA\n"
+             "4. La Region que menos ventas tuvo fue Otros")
 
 # %%
