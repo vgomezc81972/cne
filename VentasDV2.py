@@ -251,18 +251,11 @@ with st.container():
         color=alt.Color('Tipo:N', title="Tipo de Ventas")
     ).properties(width=1200, height=1000)
     st.altair_chart(chart)
-
-
-with st.container():
-    st.write("---")
-    st.header("Ventas Editorial")
-    st.write("Esta imagen muestra Total Ventas de todos los tipos")
-    chart = alt.Chart(totale_por_grupo).mark_bar().encode(
-        x=alt.X('Editorial:N', title="Editorial"),
-        y=alt.Y('Total_Grupo:Q', title="Total de Ventas"),
-        color=alt.Color('Tipo:N', title="Tipo de Ventas")
-    ).properties(width=1200, height=1000)
-    st.altair_chart(chart)
+with st.expander("Análisis"):
+    st.write("1. Se evidencia que el año 2008, tuvo mas ventas en todas las regiones\n"
+             "2. Se Evidencia que la decada los 80 fueron las ventas mas bajas\n"
+             "3. La Region que mas ventas tuvo fue NA\n"
+             "4. La Region que menos ventas tuvo fue Otros")
 
 
 with st.container():
@@ -279,8 +272,8 @@ with st.container():
     ).properties(width=800, height=400)
     st.altair_chart(chart)
 with st.expander("Análisis"):
-    st.write("1. Se evidencia que el año 2008, tuvo mas ventas en todas las regiones\n"
-             "2. Se Evidencia que la decada los 80 fueron las ventas mas bajas\n"
-             "3. La Region que mas ventas tuvo fue NA\n"
-             "4. La Region que menos ventas tuvo fue Otros")
+    st.write("1. Se evidencia que la editorial : Nipo Amuse es la de mayor ventas\n"
+             "2. La segunda editorial de mayor ventas es : Edia\n"
+             "3. La editorial de menos ventas es : Hal Laboratory\n"
+             "4. La Region que mas ventas tuvo de editorial es : Ventas NA")
 # %%
