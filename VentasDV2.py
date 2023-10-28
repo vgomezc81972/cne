@@ -264,15 +264,6 @@ with st.container():
     ).properties(width=1200, height=1000)
     st.altair_chart(chart)
 
-with st.container():
-    st.write("---")
-    st.header("Ventas Editorial")
-    st.write("Esta imagen muestra Total Ventas de todos los tipos")
-
-    #df2 = px.total_por_plataforma.iris()
-    fig = px.scatter(totalp_por_grupo, x="Plataforma", y="Total_Grupo", color="Tipo", marginal_y="violin",
-            marginal_x="box", trendline="ols", template="simple_white")
-    fig.show()
 
 with st.container():
     st.write("---")
@@ -292,5 +283,15 @@ with st.expander("Análisis"):
              "2. Se Evidencia que la decada los 80 fueron las ventas mas bajas\n"
              "3. La Region que mas ventas tuvo fue NA\n"
              "4. La Region que menos ventas tuvo fue Otros")
+
+with st.container():
+    st.write("---")
+    st.header("Ventas Editorial")
+    st.write("Esta imagen muestra Total Ventas de todos los tipos")
+
+    #df2 = px.total_por_plataforma.iris()
+    fig = px.scatter(totala_por_grupo, x="Año", y="Total_Grupo", color="Tipo", marginal_y="violin",
+            marginal_x="box", trendline="ols", template="simple_white")
+    fig.show()
 
 # %%
