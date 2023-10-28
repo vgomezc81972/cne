@@ -270,7 +270,7 @@ with st.container():
     st.write("Esta imagen muestra Total Ventas de todos los tipos")
 
     #df2 = px.total_por_plataforma.iris()
-    fig = px.scatter(px.total_por_plataforma, x="Plataforma", y="Total_Grupo", color="Tipo", marginal_y="violin",
+    fig = px.scatter(totalp_por_grupo, x="Plataforma", y="Total_Grupo", color="Tipo", marginal_y="violin",
             marginal_x="box", trendline="ols", template="simple_white")
     fig.show()
 
