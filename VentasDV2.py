@@ -289,8 +289,8 @@ with st.container():
     st.header("Ventas Editorial")
     st.write("Esta imagen muestra Total Ventas de todos los tipos")
 
-    #df2 = px.total_por_plataforma.iris()
-    fig = px.scatter(totala_por_grupo, x="Año", y="Total_Grupo", color="Tipo", marginal_y="violin",
+    df2 = px.totala_por_grupo.iris()
+    fig = px.scatter(df2, x="Año", y="Total_Grupo", color="Tipo", marginal_y="violin",
             marginal_x="box", trendline="ols", template="simple_white")
     fig.show()
 
