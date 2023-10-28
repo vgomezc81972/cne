@@ -4,3 +4,4 @@ pandas
 pydeck
 streamlit
 openpyxl>=3.0.10
+plotly
