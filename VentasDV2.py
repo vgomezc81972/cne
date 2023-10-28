@@ -283,24 +283,4 @@ with st.expander("Análisis"):
              "2. Se Evidencia que la decada los 80 fueron las ventas mas bajas\n"
              "3. La Region que mas ventas tuvo fue NA\n"
              "4. La Region que menos ventas tuvo fue Otros")
-
-with st.container():
-    st.write("---")
-    st.header("Ventas Escala x Años")
-    st.write("Esta imagen muestra Total Ventas de todos los tipos")
-
-    #df2 = px.totala_por_grupo.iris()
-    fig = px.scatter(totala_por_grupo, x="Año", y="Total_Grupo", color="Tipo", marginal_y="violin",
-            marginal_x="box", trendline="ols", template="simple_white")
-    fig.show()
-
-with st.container():
-    st.write("---")
-    st.header("Ventas Años")
-    st.write("Esta imagen muestra Total Ventas x Años")
-    # x and y given as DataFrame columns
-    df = totala_por_grupo # iris is a pandas DataFrame
-    fig = px.scatter(df, x="Año", y="Total_Grupo")
-    fig.show()
-
 # %%
