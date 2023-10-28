@@ -11,6 +11,7 @@ import pandas as pd
 import pip
 pip.main(["install", "openpyxl"])
 import altair as alt
+import plotly.express as px
 
 
 def set_page_config():
@@ -250,6 +251,28 @@ with st.container():
         color=alt.Color('Tipo:N', title="Tipo de Ventas")
     ).properties(width=1200, height=1000)
     st.altair_chart(chart)
+
+
+with st.container():
+    st.write("---")
+    st.header("Ventas Editorial")
+    st.write("Esta imagen muestra Total Ventas de todos los tipos")
+    chart = alt.Chart(totale_por_grupo).mark_bar().encode(
+        x=alt.X('Editorial:N', title="Editorial"),
+        y=alt.Y('Total_Grupo:Q', title="Total de Ventas"),
+        color=alt.Color('Tipo:N', title="Tipo de Ventas")
+    ).properties(width=1200, height=1000)
+    st.altair_chart(chart)
+
+with st.container():
+    st.write("---")
+    st.header("Ventas Editorial")
+    st.write("Esta imagen muestra Total Ventas de todos los tipos")
+
+    df2 = px.total_por_plataforma.iris()
+    fig = px.scatter(df2, x="Plataforma", y="Total_Grupo", color="Tipo", marginal_y="violin",
+            marginal_x="box", trendline="ols", template="simple_white")
+    fig.show()
 
 with st.container():
     st.write("---")
