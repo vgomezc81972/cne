@@ -129,6 +129,8 @@ with st.container():
 
 with st.container():
     st.write("---")
+
+   # st.sidebar.image(load_image("sur.png"), use_column_width=True)
     st.header("Historico de Tiempo de Espera de Atencion de Pacientes")
 
     kpis = calculate_kpis(df)
@@ -209,10 +211,6 @@ with st.container():
         st.header("TURNO DEL DIA")
         st.write("Esta imagen muestra Total Tiempo x Turno del Dia")
     
-       # promedio = df[mask]['Tiempo_Minutos_Total'].median()
-       # df[mask].loc[df[mask]['Tiempo_Minutos_Total'] > 420, 'Tiempo_Minutos_Total'] = promedio
-       # df[mask].loc[df[mask]['Tiempo_Minutos_Total'] < 0, 'Tiempo_Minutos_Total'] = promedio
-
         # Condiciones para asignar turnos
         conditions = [
             (df['FECHA_LLEGADA'].dt.time >= pd.to_datetime('07:00:00').time()) & (df['FECHA_LLEGADA'].dt.time < pd.to_datetime('14:00:00').time()),  # Mañana
@@ -330,28 +328,135 @@ with st.container():
         st.pyplot(fig)
 
     with right_column:
-        st.header("HORAS DEL DIA")
-        st.write("Esta imagen muestra Por Horas del Dia")
-    
-        # Ahora puedes acceder al día de la semana usando el atributo 'dayofweek'
-        df['Hora_del_dia'] = df[mask]['FECHA_LLEGADA'].dt.hour
 
-        promedio = df[mask]['Tiempo_Minutos_Total'].median()
-        df[mask].loc[df[mask]['Tiempo_Minutos_Total'] > 420, 'Tiempo_Minutos_Total'] = promedio
-        df[mask].loc[df[mask]['Tiempo_Minutos_Total'] < 0, 'Tiempo_Minutos_Total'] = promedio
+        st.header("HORA DEL DIA")
+        st.write("Esta imagen muestra Prediccion Por dias de la semana")
+    
+        dfp = dataset[['FECHA_LLEGADA', 'Tiempo_Minutos_Total']].copy()
+        dfp.rename(columns={'FECHA_LLEGADA': 'ds', 'Tiempo_Minutos_Total': 'y'}, inplace=True)
+        dfp["y"] = pd.to_numeric(dfp["y"],errors='coerce')
+
+        median = dfp['y'].median()
+        dfp.loc[dfp['y'] > 420, 'y'] = median
+        dfp.loc[dfp['y'] < 0, 'y'] = median
+
+        m = Prophet()
+        m.fit(dfp[mask])
+        future = m.make_future_dataframe(periods=mask_Prediccion)
+        forecast = m.predict(future)
+
+        # Añade el día de la semana a las predicciones
+        forecast['Hora_dia'] = forecast['ds'].dt.hour
 
         # Calcula el promedio de las predicciones para cada día de la semana
-        average_predicted_minutes = df.groupby('Hora_del_dia')['Tiempo_Minutos_Total'].mean()
-
-        # Establece los índices explícitamente
-        # average_predicted_minutes.index = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
+        average_predicted_minutes = forecast.groupby('Hora_dia')['yhat'].mean()
 
         # Trazar el gráfico de barras
         fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='cornflowerblue', ax=ax)
-        ax.set_xlabel('Hora del Dia')
-        ax.set_ylabel('Promedio del Tiempo (minutos)')
-        ax.set_title('Promedio del Tiempo en Horas')
+        sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='skyblue', ax=ax)
+        ax.set_xlabel('Día de la Semana')
+        ax.set_ylabel('Prediccion Promedio del Tiempo (minutos)')
+        ax.set_title('Prediccion Promedio del Tiempo por Día de la Semana')
+
+        # Añade etiquetas a las barras
+        for i, bar in enumerate(ax.patches):
+            yval = bar.get_height()
+            xval = bar.get_x() + bar.get_width() / 2
+            ax.text(xval, yval, f"{round(yval, 2)}", ha='center', va='bottom')
+
+        # Muestra la figura en Streamlit
+        st.pyplot(fig)
+
+
+with st.container():
+    st.write("---")
+
+    left_column , right_column = st.columns(2)
+
+    with left_column:
+        st.header("TURNO DEL DIA")
+        st.write("Esta imagen muestra Prediccion Por Total Tiempo por Turno")
+    
+        dfp = dataset[['FECHA_LLEGADA', 'Tiempo_Minutos_Total']].copy()
+        dfp.rename(columns={'FECHA_LLEGADA': 'ds', 'Tiempo_Minutos_Total': 'y'}, inplace=True)
+        dfp["y"] = pd.to_numeric(dfp["y"],errors='coerce')
+
+        median = dfp['y'].median()
+        dfp.loc[dfp['y'] > 420, 'y'] = median
+        dfp.loc[dfp['y'] < 0, 'y'] = median
+
+        m = Prophet()
+        m.fit(dfp[mask])
+        future = m.make_future_dataframe(periods=mask_Prediccion)
+        forecast = m.predict(future)
+
+        # Añade el día de la semana a las predicciones
+        forecast['day_of_week'] = forecast['ds'].dt.dayofweek
+
+
+        # Condiciones para asignar turnos
+        conditions = [
+            (forecast['ds'].dt.time >= pd.to_datetime('07:00:00').time()) & (forecast['ds'].dt.time < pd.to_datetime('14:00:00').time()),  # Mañana
+            (forecast['ds'].dt.time >= pd.to_datetime('14:00:00').time()) & (forecast['ds'].dt.time < pd.to_datetime('19:00:00').time()),  # Tarde
+            (forecast['ds'].dt.time >= pd.to_datetime('19:00:00').time()) & (forecast['ds'].dt.time < pd.to_datetime('23:59:59').time()),  # Noche
+            (forecast['ds'].dt.time >= pd.to_datetime('00:00:00').time()) & (forecast['ds'].dt.time < pd.to_datetime('07:00:00').time())     # Madrugada
+        ]
+
+        # Valores correspondientes a cada turno
+        values = ['Mañana', 'Tarde', 'Noche', 'Madrugada']
+
+        # Asignar el turno según las condiciones
+        forecast['Turno'] = np.select(conditions, values, default='Error')
+
+        # Calcula el promedio de las predicciones para cada día de la semana
+        average_predicted_minutes = forecast.groupby('Turno')['yhat'].mean()
+
+        # Trazar el gráfico de barras
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='lightseagreen', ax=ax)
+        ax.set_xlabel('Turno del Dia')
+        ax.set_ylabel('Prediccion Promedio del Tiempo (minutos)')
+        ax.set_title('Prediccion Promedio del Tiempo por Turno Diario')
+
+        # Añade etiquetas a las barras
+        for i, bar in enumerate(ax.patches):
+            yval = bar.get_height()
+            xval = bar.get_x() + bar.get_width() / 2
+            ax.text(xval, yval, f"{round(yval, 2)}", ha='center', va='bottom')
+
+        # Muestra la figura en Streamlit
+        st.pyplot(fig)
+
+    with right_column:
+
+        st.header("MES")
+        st.write("Esta imagen muestra Prediccion TIEMPO por mes")
+    
+        dfp = dataset[['FECHA_LLEGADA', 'Tiempo_Minutos_Total']].copy()
+        dfp.rename(columns={'FECHA_LLEGADA': 'ds', 'Tiempo_Minutos_Total': 'y'}, inplace=True)
+        dfp["y"] = pd.to_numeric(dfp["y"],errors='coerce')
+
+        median = dfp['y'].median()
+        dfp.loc[dfp['y'] > 420, 'y'] = median
+        dfp.loc[dfp['y'] < 0, 'y'] = median
+
+        m = Prophet()
+        m.fit(dfp[mask])
+        future = m.make_future_dataframe(periods=mask_Prediccion)
+        forecast = m.predict(future)
+
+        # Añade el día de la semana a las predicciones
+        forecast['Mes2'] = forecast['ds'].dt.month
+
+        # Calcula el promedio de las predicciones para cada día de la semana
+        average_predicted_minutes = forecast.groupby('Mes2')['yhat'].mean()
+
+        # Trazar el gráfico de barras
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='skyblue', ax=ax)
+        ax.set_xlabel('Tiempo x Mes')
+        ax.set_ylabel('Prediccion Promedio del Tiempo (minutos)')
+        ax.set_title('Prediccion Promedio del Tiempo por Mes')
 
         # Añade etiquetas a las barras
         for i, bar in enumerate(ax.patches):
