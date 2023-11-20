@@ -110,23 +110,6 @@ with st.container():
         for i, (col, (kpi_name, kpi_value)) in enumerate(zip(st.columns(4), zip(kpi_names, kpis))):
             col.metric(label=kpi_name, value=kpi_value)
 
-
-  @st.cache_data
-  def calculate_kpisp(df: pd.DataFrame) -> List[float]:
-        total_minutos1 =(df[mask]['Tiempo_Minutos_Total'].sum())
-        Total_minutos = f"{total_minutos1:.2f}M"
-        total_pacientes = df[mask]['PACIENTE_#_DOCUMENTO'].nunique()
-        Promedio_minutos = f"{total_minutos1 / total_pacientes:.2f}K"
-        Promedio_minutos2 =(df[mask]['Tiempo_Minutos_Total'].median())
-        promedio = f"{Promedio_minutos2:.2f}K"
-        return [promedio, total_pacientes, Promedio_minutos, numero_resultados]
-  
-
-  def display_kpi_metricsp(kpis: List[float], kpi_names: List[str]):
-        st.header("KPI Metrics")
-        for i, (col, (kpi_name, kpi_value)) in enumerate(zip(st.columns(4), zip(kpi_names, kpis))):
-            col.metric(label=kpi_name, value=kpi_value)            
-
 with st.container():
     st.write("---")
     st.header("Historico de Tiempo de Espera de Atencion de Pacientes")
