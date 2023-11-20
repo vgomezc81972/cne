@@ -62,7 +62,7 @@ st.sidebar.info('Created by Victor - Diana')
 # Aplicar filtros a los datos
 filtro_anos = df['AÑO'].unique().tolist()
 
-if filtro_centro == 'Todos':
+if filtro_centro == 'JT':
     mask_centro = df['CENTRO_ATENCION'].notna()
 else:
     mask_centro = df['CENTRO_ATENCION'] == filtro_centro
