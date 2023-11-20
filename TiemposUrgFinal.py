@@ -112,16 +112,15 @@ with st.container():
 
 
   @st.cache_data
-  def calculate_kpisp(df: pd.DataFrame) -> List[float]:
-        total_minutos1 =(df[mask]['Tiempo_Minutos_Total'].sum())
-        Total_minutos = f"{total_minutos1:.2f}M"
-        total_pacientes = df[mask]['PACIENTE_#_DOCUMENTO'].nunique()
-        Promedio_minutos = f"{total_minutos1 / total_pacientes:.2f}K"
-        Promedio_minutos2 =(df[mask]['Tiempo_Minutos_Total'].median())
-        promedio = f"{Promedio_minutos2:.2f}K"
+  def calculate_kpisp(forecast: pd.DataFrame) -> List[float]:
+        total_minutos2 =(forecast['yhat'].sum())
+        Total_minutos = f"{total_minutos2:.1f}M"
+        total_pacientes = forecast['yhat'].nunique()
+        Promedio_minutos = f"{total_minutos2 / total_pacientes:.1f}Min"
+        Promedio_minutos2 =(forecast['yhat'].median())
+        promedio = f"{Promedio_minutos2:.1f}Min"
         return [promedio, total_pacientes, Promedio_minutos, numero_resultados]
   
-
   def display_kpi_metricsp(kpis: List[float], kpi_names: List[str]):
         st.header("KPI Metrics")
         for i, (col, (kpi_name, kpi_value)) in enumerate(zip(st.columns(4), zip(kpi_names, kpis))):
@@ -279,37 +278,39 @@ with st.container():
     st.write("---")
     st.header("Predicción de Tiempo de Espera de Atencion de Pacientes")
 
+    dfp = dataset[['FECHA_LLEGADA', 'Tiempo_Minutos_Total']].copy()
+    dfp.rename(columns={'FECHA_LLEGADA': 'ds', 'Tiempo_Minutos_Total': 'y'}, inplace=True)
+    dfp["y"] = pd.to_numeric(dfp["y"],errors='coerce')
+
+    median = dfp['y'].median()
+    dfp.loc[dfp['y'] > 420, 'y'] = median
+    dfp.loc[dfp['y'] < 0, 'y'] = median
+
+    m = Prophet()
+    m.fit(dfp[mask])
+    future = m.make_future_dataframe(periods=mask_Prediccion)
+    forecast = m.predict(future)
+
+    kpis = calculate_kpisp(forecast)
+    kpi_names = ["Promedio Minutos", "Cantidad Pacientes", "Minutos Minimo", "Cantidad Atenciones"]    
+    display_kpi_metricsp(kpis, kpi_names)
+
     left_column , right_column = st.columns(2)
 
     with left_column:
         st.header("DIA DE LA SEMANA")
         st.write("Esta imagen muestra Prediccion Por dias de la semana")
     
-        dfp = dataset[['FECHA_LLEGADA', 'Tiempo_Minutos_Total']].copy()
-        dfp.rename(columns={'FECHA_LLEGADA': 'ds', 'Tiempo_Minutos_Total': 'y'}, inplace=True)
-        dfp["y"] = pd.to_numeric(dfp["y"],errors='coerce')
-
-        median = dfp['y'].median()
-        dfp.loc[dfp['y'] > 420, 'y'] = median
-        dfp.loc[dfp['y'] < 0, 'y'] = median
-
-        m = Prophet()
-        m.fit(dfp[mask])
-        future = m.make_future_dataframe(periods=mask_Prediccion)
-        forecast = m.predict(future)
-
         # Añade el día de la semana a las predicciones
         forecast['day_of_week'] = forecast['ds'].dt.dayofweek
 
         # Calcula el promedio de las predicciones para cada día de la semana
         average_predicted_minutes = forecast.groupby('day_of_week')['yhat'].mean()
 
+        total_minutos2 = (forecast['yhat'].sum())
+
         # Establece los índices explícitamente
         average_predicted_minutes.index = ['Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado', 'Domingo']
-
-       # kpisp = calculate_kpisp(forecast)
-       # kpi_namesp = ["Vlr_Ventas", "Cantidad Pacientes", "Promedio Minutos", "Cantidad Atenciones"]
-       # display_kpi_metricsp(kpisp, kpi_namesp)
 
         # Trazar el gráfico de barras
         fig, ax = plt.subplots(figsize=(10, 6))
@@ -332,19 +333,6 @@ with st.container():
         st.header("HORA DEL DIA")
         st.write("Esta imagen muestra Prediccion Por dias de la semana")
     
-        dfp = dataset[['FECHA_LLEGADA', 'Tiempo_Minutos_Total']].copy()
-        dfp.rename(columns={'FECHA_LLEGADA': 'ds', 'Tiempo_Minutos_Total': 'y'}, inplace=True)
-        dfp["y"] = pd.to_numeric(dfp["y"],errors='coerce')
-
-        median = dfp['y'].median()
-        dfp.loc[dfp['y'] > 420, 'y'] = median
-        dfp.loc[dfp['y'] < 0, 'y'] = median
-
-        m = Prophet()
-        m.fit(dfp[mask])
-        future = m.make_future_dataframe(periods=mask_Prediccion)
-        forecast = m.predict(future)
-
         # Añade el día de la semana a las predicciones
         forecast['Hora_dia'] = forecast['ds'].dt.hour
 
@@ -354,7 +342,7 @@ with st.container():
         # Trazar el gráfico de barras
         fig, ax = plt.subplots(figsize=(10, 6))
         sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='skyblue', ax=ax)
-        ax.set_xlabel('Día de la Semana')
+        ax.set_xlabel('Hora del Dia')
         ax.set_ylabel('Prediccion Promedio del Tiempo (minutos)')
         ax.set_title('Prediccion Promedio del Tiempo por Día de la Semana')
 
@@ -377,23 +365,6 @@ with st.container():
         st.header("TURNO DEL DIA")
         st.write("Esta imagen muestra Prediccion Por Total Tiempo por Turno")
     
-        dfp = dataset[['FECHA_LLEGADA', 'Tiempo_Minutos_Total']].copy()
-        dfp.rename(columns={'FECHA_LLEGADA': 'ds', 'Tiempo_Minutos_Total': 'y'}, inplace=True)
-        dfp["y"] = pd.to_numeric(dfp["y"],errors='coerce')
-
-        median = dfp['y'].median()
-        dfp.loc[dfp['y'] > 420, 'y'] = median
-        dfp.loc[dfp['y'] < 0, 'y'] = median
-
-        m = Prophet()
-        m.fit(dfp[mask])
-        future = m.make_future_dataframe(periods=mask_Prediccion)
-        forecast = m.predict(future)
-
-        # Añade el día de la semana a las predicciones
-        forecast['day_of_week'] = forecast['ds'].dt.dayofweek
-
-
         # Condiciones para asignar turnos
         conditions = [
             (forecast['ds'].dt.time >= pd.to_datetime('07:00:00').time()) & (forecast['ds'].dt.time < pd.to_datetime('14:00:00').time()),  # Mañana
@@ -432,19 +403,6 @@ with st.container():
         st.header("MES")
         st.write("Esta imagen muestra Prediccion TIEMPO por mes")
     
-        dfp = dataset[['FECHA_LLEGADA', 'Tiempo_Minutos_Total']].copy()
-        dfp.rename(columns={'FECHA_LLEGADA': 'ds', 'Tiempo_Minutos_Total': 'y'}, inplace=True)
-        dfp["y"] = pd.to_numeric(dfp["y"],errors='coerce')
-
-        median = dfp['y'].median()
-        dfp.loc[dfp['y'] > 420, 'y'] = median
-        dfp.loc[dfp['y'] < 0, 'y'] = median
-
-        m = Prophet()
-        m.fit(dfp[mask])
-        future = m.make_future_dataframe(periods=mask_Prediccion)
-        forecast = m.predict(future)
-
         # Añade el día de la semana a las predicciones
         forecast['Mes2'] = forecast['ds'].dt.month
 
