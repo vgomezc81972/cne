@@ -1,6 +1,8 @@
-streamlit
-pandas
+altair
 numpy
+pandas
+pydeck
+streamlit
 matplotlib
 seaborn
 prophet
