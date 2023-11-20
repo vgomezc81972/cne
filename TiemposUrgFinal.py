@@ -6,7 +6,6 @@
 import streamlit as st
 import types  # Importa types en lugar de builtins
 import pandas as pd
-import numpy as np
 import matplotlib.pyplot as plt
 import seaborn as sns
 from typing import List, Tuple
@@ -62,7 +61,7 @@ st.sidebar.info('Created by Victor - Diana')
 # Aplicar filtros a los datos
 filtro_anos = df['AÑO'].unique().tolist()
 
-if filtro_centro == 'JT':
+if filtro_centro == 'Todos':
     mask_centro = df['CENTRO_ATENCION'].notna()
 else:
     mask_centro = df['CENTRO_ATENCION'] == filtro_centro
@@ -109,6 +108,23 @@ with st.container():
         st.header("KPI Metrics")
         for i, (col, (kpi_name, kpi_value)) in enumerate(zip(st.columns(4), zip(kpi_names, kpis))):
             col.metric(label=kpi_name, value=kpi_value)
+
+
+  @st.cache_data
+  def calculate_kpisp(df: pd.DataFrame) -> List[float]:
+        total_minutos1 =(df[mask]['Tiempo_Minutos_Total'].sum())
+        Total_minutos = f"{total_minutos1:.2f}M"
+        total_pacientes = df[mask]['PACIENTE_#_DOCUMENTO'].nunique()
+        Promedio_minutos = f"{total_minutos1 / total_pacientes:.2f}K"
+        Promedio_minutos2 =(df[mask]['Tiempo_Minutos_Total'].median())
+        promedio = f"{Promedio_minutos2:.2f}K"
+        return [promedio, total_pacientes, Promedio_minutos, numero_resultados]
+  
+
+  def display_kpi_metricsp(kpis: List[float], kpi_names: List[str]):
+        st.header("KPI Metrics")
+        for i, (col, (kpi_name, kpi_value)) in enumerate(zip(st.columns(4), zip(kpi_names, kpis))):
+            col.metric(label=kpi_name, value=kpi_value)            
 
 with st.container():
     st.write("---")
@@ -182,82 +198,6 @@ with st.container():
 
         # Muestra la figura en Streamlit
         st.pyplot(fig)
-
-with st.container():
-    st.write("---")
-   
-    left_column , right_column = st.columns(2)
-
-    with left_column:
-        st.header("TURNO DEL DIA")
-        st.write("Esta imagen muestra Total Tiempo x Turno del Dia")
-    
-       # promedio = df[mask]['Tiempo_Minutos_Total'].median()
-       # df[mask].loc[df[mask]['Tiempo_Minutos_Total'] > 420, 'Tiempo_Minutos_Total'] = promedio
-       # df[mask].loc[df[mask]['Tiempo_Minutos_Total'] < 0, 'Tiempo_Minutos_Total'] = promedio
-
-        # Condiciones para asignar turnos
-        conditions = [
-            (df['FECHA_LLEGADA'].dt.time >= pd.to_datetime('07:00:00').time()) & (df['FECHA_LLEGADA'].dt.time < pd.to_datetime('14:00:00').time()),  # Mañana
-            (df['FECHA_LLEGADA'].dt.time >= pd.to_datetime('14:00:00').time()) & (df['FECHA_LLEGADA'].dt.time < pd.to_datetime('19:00:00').time()),  # Tarde
-            (df['FECHA_LLEGADA'].dt.time >= pd.to_datetime('19:00:00').time()) & (df['FECHA_LLEGADA'].dt.time < pd.to_datetime('23:59:59').time()),  # Noche
-            (df['FECHA_LLEGADA'].dt.time >= pd.to_datetime('00:00:00').time()) & (df['FECHA_LLEGADA'].dt.time < pd.to_datetime('07:00:00').time())     # Madrugada
-        ]
-
-        # Valores correspondientes a cada turno
-        values = ['Mañana', 'Tarde', 'Noche', 'Madrugada']
-
-        # Asignar el turno según las condiciones
-        df['Turno'] = np.select(conditions, values, default='Error')
-
-        # Calcular el promedio de las predicciones para cada turno
-        average_predicted_minutes = df.groupby('Turno')['Tiempo_Minutos_Total'].mean()
-
-        # Trazar el gráfico de barras
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='cornflowerblue', ax=ax)
-        ax.set_xlabel('Turno del Día')
-        ax.set_ylabel('Promedio del Tiempo (minutos)')
-        ax.set_title('Promedio del Tiempo en Turnos')
-
-        # Añade etiquetas a las barras
-        for i, bar in enumerate(ax.patches):
-            yval = bar.get_height()
-            xval = bar.get_x() + bar.get_width() / 2
-            ax.text(xval, yval, f"{round(yval, 2)}", ha='center', va='bottom')
-
-        # Muestra la figura en Streamlit
-        st.pyplot(fig)
-
-    with right_column:
-        st.header("MES")
-        st.write("Esta imagen muestra Por Timepo x Mes")
-    
-        # Ahora puedes acceder al día de la semana usando el atributo 'dayofweek'
-        df['Mes1'] = df[mask]['FECHA_LLEGADA'].dt.month
-
-        promedio = df[mask]['Tiempo_Minutos_Total'].median()
-        df[mask].loc[df[mask]['Tiempo_Minutos_Total'] > 420, 'Tiempo_Minutos_Total'] = promedio
-        df[mask].loc[df[mask]['Tiempo_Minutos_Total'] < 0, 'Tiempo_Minutos_Total'] = promedio
-
-        # Calcula el promedio de las predicciones para cada día de la semana
-        average_predicted_minutes = df.groupby('Mes1')['Tiempo_Minutos_Total'].mean()
-
-        # Trazar el gráfico de barras
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='#00FF00', ax=ax)
-        ax.set_xlabel('Mes')
-        ax.set_ylabel('Promedio del Tiempo (minutos)')
-        ax.set_title('Promedio del Tiempo en Horas')
-
-        # Añade etiquetas a las barras
-        for i, bar in enumerate(ax.patches):
-            yval = bar.get_height()
-            xval = bar.get_x() + bar.get_width() / 2
-            ax.text(xval, yval, f"{round(yval, 2)}", ha='center', va='bottom')
-
-        # Muestra la figura en Streamlit
-        st.pyplot(fig)        
 
 with st.container():
     st.write("---")
