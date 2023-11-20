@@ -7,3 +7,4 @@ matplotlib
 seaborn
 prophet
 openpyxl>=3.0.10
+/home/adminuser/venv/bin/python -m pip install --upgrade pip
