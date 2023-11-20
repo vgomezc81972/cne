@@ -254,7 +254,7 @@ with st.container():
         st.write("Esta imagen muestra Total Tiempo x Mes")
     
         # Ahora puedes acceder al día de la semana usando el atributo 'dayofweek'
-        df['Mes'] = df[mask]['FECHA_LLEGADA'].dt.mount
+        df['Mes'] = df[mask]['FECHA_LLEGADA'].dt.month
 
         #promedio = df[mask]['Tiempo_Minutos_Total'].median()
         #df[mask].loc[df[mask]['Tiempo_Minutos_Total'] > 420, 'Tiempo_Minutos_Total'] = promedio
