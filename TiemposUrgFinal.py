@@ -170,6 +170,38 @@ with st.container():
         # Muestra la figura en Streamlit
         st.pyplot(fig)
 
+
+    with right_column:
+        st.header("HORAS DEL DIA")
+        st.write("Esta imagen muestra Por Horas del Dia")
+    
+        # Ahora puedes acceder al día de la semana usando el atributo 'dayofweek'
+        df['Hora_del_dia'] = df[mask]['FECHA_LLEGADA'].dt.hour
+
+        promedio = df[mask]['Tiempo_Minutos_Total'].median()
+        df[mask].loc[df[mask]['Tiempo_Minutos_Total'] > 420, 'Tiempo_Minutos_Total'] = promedio
+        df[mask].loc[df[mask]['Tiempo_Minutos_Total'] < 0, 'Tiempo_Minutos_Total'] = promedio
+
+        # Calcula el promedio de las predicciones para cada día de la semana
+        average_predicted_minutes = df.groupby('Hora_del_dia')['Tiempo_Minutos_Total'].mean()
+
+        # Trazar el gráfico de barras
+        fig, ax = plt.subplots(figsize=(10, 6))
+        sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='#00FF00', ax=ax)
+        ax.set_xlabel('Hora del Dia')
+        ax.set_ylabel('Promedio del Tiempo (minutos)')
+        ax.set_title('Promedio del Tiempo en Horas')
+
+        # Añade etiquetas a las barras
+        for i, bar in enumerate(ax.patches):
+            yval = bar.get_height()
+            xval = bar.get_x() + bar.get_width() / 2
+            ax.text(xval, yval, f"{round(yval, 2)}", ha='center', va='bottom')
+
+        # Muestra la figura en Streamlit
+        st.pyplot(fig)
+
+
 with st.container():
     st.write("---")
    
@@ -217,7 +249,6 @@ with st.container():
         st.pyplot(fig)
 
 
-
     with right_column:
         st.header("MES")
         st.write("Esta imagen muestra Total Tiempo x Mes")
@@ -248,35 +279,7 @@ with st.container():
         # Muestra la figura en Streamlit
         st.pyplot(fig)
 
-    with right_column:
-        st.header("HORAS DEL DIA")
-        st.write("Esta imagen muestra Por Horas del Dia")
-    
-        # Ahora puedes acceder al día de la semana usando el atributo 'dayofweek'
-        df['Hora_del_dia'] = df[mask]['FECHA_LLEGADA'].dt.hour
 
-        promedio = df[mask]['Tiempo_Minutos_Total'].median()
-        df[mask].loc[df[mask]['Tiempo_Minutos_Total'] > 420, 'Tiempo_Minutos_Total'] = promedio
-        df[mask].loc[df[mask]['Tiempo_Minutos_Total'] < 0, 'Tiempo_Minutos_Total'] = promedio
-
-        # Calcula el promedio de las predicciones para cada día de la semana
-        average_predicted_minutes = df.groupby('Hora_del_dia')['Tiempo_Minutos_Total'].mean()
-
-        # Trazar el gráfico de barras
-        fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='#00FF00', ax=ax)
-        ax.set_xlabel('Hora del Dia')
-        ax.set_ylabel('Promedio del Tiempo (minutos)')
-        ax.set_title('Promedio del Tiempo en Horas')
-
-        # Añade etiquetas a las barras
-        for i, bar in enumerate(ax.patches):
-            yval = bar.get_height()
-            xval = bar.get_x() + bar.get_width() / 2
-            ax.text(xval, yval, f"{round(yval, 2)}", ha='center', va='bottom')
-
-        # Muestra la figura en Streamlit
-        st.pyplot(fig)
 
 with st.container():
     st.write("---")
