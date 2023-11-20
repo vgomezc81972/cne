@@ -265,7 +265,7 @@ with st.container():
 
         # Trazar el gráfico de barras
         fig, ax = plt.subplots(figsize=(10, 6))
-        sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='deepskyblue', ax=ax)
+        sns.barplot(x=average_predicted_minutes.index, y=average_predicted_minutes.values, color='cornflowerblue', ax=ax)
         ax.set_xlabel('Mes')
         ax.set_ylabel('Promedio del Tiempo (minutos)')
         ax.set_title('Promedio del Tiempo en Horas')
