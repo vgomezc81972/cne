@@ -1,9 +1,9 @@
 altair
-numpy
 pandas
 pydeck
 streamlit
 matplotlib
 seaborn
 prophet
+fernet
 openpyxl>=3.0.10
